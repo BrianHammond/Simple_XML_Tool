@@ -28,11 +28,13 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
         self.button_delete.clicked.connect(self.delete_book)
 
     def new_file(self):
-        self.initialize_table()
+        self.clear_fields()
         self.filename = QFileDialog.getSaveFileName(self, 'Create a new file', '', 'Data File (*.xml)',)
 
         if not self.filename[0]:
             return  # Do nothing if no file is selected
+        
+        self.initialize_table()
         
         self.setWindowTitle(self.filename[0].split('/')[-1])
         try:
@@ -44,8 +46,14 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
             pass
 
     def open_file(self):
-        self.initialize_table()
+        self.clear_fields()
         self.filename = QFileDialog.getOpenFileName(self, 'Open File', '', 'Data File (*.xml)')
+
+        if not self.filename[0]:
+            return  # Do nothing if no file is selected
+        
+        self.initialize_table()
+
         self.setWindowTitle(self.filename[0].split('/')[-1])
 
         try:
@@ -185,6 +193,8 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
             print(f"XML file '{xml_file}' updated successfully.")
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to update book information: {str(e)}")
+
+        self.table.resizeColumnsToContents()
 
     def delete_book(self):
         try:
