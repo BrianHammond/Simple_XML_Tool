@@ -16,10 +16,10 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QHBoxLayout, QHeaderView, QLineEdit,
-    QMainWindow, QMenu, QMenuBar, QPushButton,
-    QSizePolicy, QStatusBar, QTableWidget, QTableWidgetItem,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QGroupBox, QHBoxLayout, QHeaderView,
+    QLineEdit, QMainWindow, QMenu, QMenuBar,
+    QPushButton, QSizePolicy, QStatusBar, QTableWidget,
+    QTableWidgetItem, QVBoxLayout, QWidget)
 import resources_rc
 
 class Ui_MainWindow(object):
@@ -47,40 +47,76 @@ class Ui_MainWindow(object):
         self.action_open.setObjectName(u"action_open")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.verticalLayout = QVBoxLayout(self.centralwidget)
+        self.verticalLayout_2 = QVBoxLayout(self.centralwidget)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.groupBox = QGroupBox(self.centralwidget)
+        self.groupBox.setObjectName(u"groupBox")
+        self.verticalLayout = QVBoxLayout(self.groupBox)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(10, 10, 10, 10)
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(10, 10, 10, 10)
-        self.line_title = QLineEdit(self.centralwidget)
-        self.line_title.setObjectName(u"line_title")
+        self.line_name = QLineEdit(self.groupBox)
+        self.line_name.setObjectName(u"line_name")
         font = QFont()
         font.setPointSize(12)
+        self.line_name.setFont(font)
+
+        self.horizontalLayout.addWidget(self.line_name)
+
+        self.line_age = QLineEdit(self.groupBox)
+        self.line_age.setObjectName(u"line_age")
+        self.line_age.setFont(font)
+
+        self.horizontalLayout.addWidget(self.line_age)
+
+        self.line_title = QLineEdit(self.groupBox)
+        self.line_title.setObjectName(u"line_title")
         self.line_title.setFont(font)
 
         self.horizontalLayout.addWidget(self.line_title)
 
-        self.line_author = QLineEdit(self.centralwidget)
-        self.line_author.setObjectName(u"line_author")
-        self.line_author.setFont(font)
+        self.line_department = QLineEdit(self.groupBox)
+        self.line_department.setObjectName(u"line_department")
+        self.line_department.setFont(font)
 
-        self.horizontalLayout.addWidget(self.line_author)
-
-        self.line_pages = QLineEdit(self.centralwidget)
-        self.line_pages.setObjectName(u"line_pages")
-        self.line_pages.setFont(font)
-
-        self.horizontalLayout.addWidget(self.line_pages)
-
-        self.line_year = QLineEdit(self.centralwidget)
-        self.line_year.setObjectName(u"line_year")
-        self.line_year.setFont(font)
-
-        self.horizontalLayout.addWidget(self.line_year)
+        self.horizontalLayout.addWidget(self.line_department)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout)
+
+        self.horizontalLayout_2 = QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.horizontalLayout_2.setContentsMargins(10, 10, 10, 10)
+        self.line_address1 = QLineEdit(self.groupBox)
+        self.line_address1.setObjectName(u"line_address1")
+        self.line_address1.setFont(font)
+
+        self.horizontalLayout_2.addWidget(self.line_address1)
+
+        self.line_address2 = QLineEdit(self.groupBox)
+        self.line_address2.setObjectName(u"line_address2")
+        self.line_address2.setFont(font)
+
+        self.horizontalLayout_2.addWidget(self.line_address2)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_2)
+
+        self.horizontalLayout_3 = QHBoxLayout()
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.horizontalLayout_3.setContentsMargins(10, 10, 10, 10)
+        self.line_additional = QLineEdit(self.groupBox)
+        self.line_additional.setObjectName(u"line_additional")
+        self.line_additional.setFont(font)
+
+        self.horizontalLayout_3.addWidget(self.line_additional)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_3)
+
+
+        self.verticalLayout_2.addWidget(self.groupBox)
 
         self.horizontalLayout_4 = QHBoxLayout()
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
@@ -101,14 +137,14 @@ class Ui_MainWindow(object):
         self.horizontalLayout_4.addWidget(self.button_delete)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout_4)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_4)
 
         self.table = QTableWidget(self.centralwidget)
         self.table.setObjectName(u"table")
         self.table.setColumnCount(0)
         self.table.verticalHeader().setVisible(False)
 
-        self.verticalLayout.addWidget(self.table)
+        self.verticalLayout_2.addWidget(self.table)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QStatusBar(MainWindow)
@@ -124,10 +160,6 @@ class Ui_MainWindow(object):
         self.menuFile = QMenu(self.menuBar)
         self.menuFile.setObjectName(u"menuFile")
         MainWindow.setMenuBar(self.menuBar)
-        QWidget.setTabOrder(self.line_title, self.line_author)
-        QWidget.setTabOrder(self.line_author, self.line_pages)
-        QWidget.setTabOrder(self.line_pages, self.line_year)
-        QWidget.setTabOrder(self.line_year, self.button_add)
         QWidget.setTabOrder(self.button_add, self.button_update)
         QWidget.setTabOrder(self.button_update, self.button_delete)
         QWidget.setTabOrder(self.button_delete, self.table)
@@ -167,13 +199,18 @@ class Ui_MainWindow(object):
 #if QT_CONFIG(shortcut)
         self.action_open.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+O", None))
 #endif // QT_CONFIG(shortcut)
-        self.line_title.setPlaceholderText(QCoreApplication.translate("MainWindow", u"title", None))
-        self.line_author.setPlaceholderText(QCoreApplication.translate("MainWindow", u"author", None))
-        self.line_pages.setPlaceholderText(QCoreApplication.translate("MainWindow", u"pages", None))
-        self.line_year.setPlaceholderText(QCoreApplication.translate("MainWindow", u"year published", None))
-        self.button_add.setText(QCoreApplication.translate("MainWindow", u"Add Book", None))
-        self.button_update.setText(QCoreApplication.translate("MainWindow", u"Update File", None))
-        self.button_delete.setText(QCoreApplication.translate("MainWindow", u"Delete Row", None))
+        self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"Employee Information", None))
+        self.line_name.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Name", None))
+        self.line_age.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Age", None))
+        self.line_title.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Title", None))
+        self.line_department.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Department", None))
+        self.line_address1.setText("")
+        self.line_address1.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Address 1", None))
+        self.line_address2.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Address 2", None))
+        self.line_additional.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Additional Information", None))
+        self.button_add.setText(QCoreApplication.translate("MainWindow", u"Add Employee", None))
+        self.button_update.setText(QCoreApplication.translate("MainWindow", u"Update Employee", None))
+        self.button_delete.setText(QCoreApplication.translate("MainWindow", u"Delete Employee", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
         self.menuSettings.setTitle(QCoreApplication.translate("MainWindow", u"Settings", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))

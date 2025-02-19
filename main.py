@@ -23,9 +23,9 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
         self.action_about_qt.triggered.connect(self.about_qt)
 
         # buttons
-        self.button_add.clicked.connect(self.add_book)
-        self.button_update.clicked.connect(self.update_book)
-        self.button_delete.clicked.connect(self.delete_book)
+        self.button_add.clicked.connect(self.add_employee)
+        self.button_update.clicked.connect(self.update_employee)
+        self.button_delete.clicked.connect(self.delete_employee)
 
     def new_file(self):
         self.clear_fields()
@@ -38,7 +38,7 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
         
         self.setWindowTitle(self.filename[0].split('/')[-1])
         try:
-            root = ET.Element("library")
+            root = ET.Element("employees")
             tree = ET.ElementTree(root)
             tree.write(self.filename[0], encoding="utf-8", xml_declaration=True)
 
@@ -60,20 +60,28 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
             tree = ET.parse(self.filename[0])
             root = tree.getroot()
 
-            self.book_ids = []  # Initialize the list to store existing book IDs
+            self.employee_ids = []  # Initialize the list to store existing book IDs
             
-            for book in root.findall("book"):
-                book_id = book.get("id")  # Extract the book ID from the XML
-                title = book.find("title").text
-                author = book.find("author").text
-                pages = book.find("pages").text
-                year = book.find("year").text
+            for employee in root.findall("employee"):
+                employee_id = employee.get("id")  # Extract the book ID from the XML
+                name = employee.find("name").text
+                age = employee.find("age").text
+                title = employee.find("title").text
+                department = employee.find("department").text
+                address = employee.find("address")
+                if address is not None:
+                    address1 = address.find("address1").text
+                    address2 = address.find("address2").text
+                else:
+                    address1 = address2 = ""
+                    
+                additional = employee.find("additional").text
 
                 row = self.table.rowCount()
 
-                self.populate_table(row, book_id, title, author, pages, year)
+                self.populate_table(row, employee_id, name, age, title, department, address1, address2, additional)
 
-                self.book_ids.append(int(book_id))
+                self.employee_ids.append(int(employee_id))
 
             print(f"File '{self.filename[0]}' opened successfully.")
         except ET.ParseError:
@@ -82,20 +90,23 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
         except FileNotFoundError:
             pass
 
-    def add_book(self):
+    def add_employee(self):
         try: # try these, if the xml file isn't loaded a message will pop up
             xml_file = self.filename[0]
-        
+            
+            name = self.line_name.text()
+            age = self.line_age.text()
             title = self.line_title.text()
-            author = self.line_author.text()
-            pages = self.line_pages.text()
-            year = self.line_year.text()
+            department = self.line_department.text()
+            address1 = self.line_address1.text()
+            address2 = self.line_address2.text()
+            additional = self.line_additional.text()
 
             row = self.table.rowCount()
 
-            book_id = str(self.get_next_book_id())
+            employee_id = str(self.get_next_employee_id())
 
-            self.populate_table(row, book_id, title, author, pages, year)
+            self.populate_table(row, employee_id, name, age, title, department, address1, address2, additional)
 
             # Check if the XML file exists, if not, create it
             if os.path.exists(xml_file):
@@ -103,15 +114,23 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
                 root = tree.getroot()
 
             # Create a new book entry
-            book = ET.SubElement(root, "book", id=book_id)
-            title_element = ET.SubElement(book, "title")
+            employee = ET.SubElement(root, "employee", id=employee_id)
+            name_element = ET.SubElement(employee, "name")
+            name_element.text = name
+            age_element = ET.SubElement(employee, "age")
+            age_element.text = age
+            title_element = ET.SubElement(employee, "title")
             title_element.text = title
-            author_element = ET.SubElement(book, "author")
-            author_element.text = author
-            pages_element = ET.SubElement(book, "pages")
-            pages_element.text = pages
-            year_element = ET.SubElement(book, "year")
-            year_element.text = year
+            department_element = ET.SubElement(employee, "department")
+            department_element.text = department
+            
+            address = ET.SubElement(employee, "address")
+            address1_element = ET.SubElement(address, "address1")
+            address1_element.text = address1
+            address2_element = ET.SubElement(address, "address2")
+            address2_element.text = address2
+            additional_element = ET.SubElement(employee, "additional")
+            additional_element.text = additional
 
             # Write the updated XML to the file (does not prettify at this point)
             tree.write(xml_file, encoding="utf-8", xml_declaration=True)
@@ -131,29 +150,26 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
                 # Remove the extra line added at the beginning by minidom
                 f.write(xml_str)
 
-            # Print confirmation
-            print(f"Book '{title}' by {author} added to XML.")
-
         except AttributeError:
             QMessageBox.warning(self, "NO FILE TO SUBMIT", "Please select a file or create one")
 
         self.clear_fields()
 
-    def get_next_book_id(self):
+    def get_next_employee_id(self):
         # This function retrieves the next available book ID from the existing XML data
         xml_file = self.filename[0]
         try:
             tree = ET.parse(xml_file)
             root = tree.getroot()
             # Get all book IDs
-            book_ids = [int(book.get("id")) for book in root.findall("book")]
-            next_id = max(book_ids) + 1 if book_ids else 1
+            employee_ids = [int(employee.get("id")) for employee in root.findall("employee")]
+            next_id = max(employee_ids) + 1 if employee_ids else 1
             return next_id
         except (FileNotFoundError, IndexError):
             # If no books exist or the file is empty, return the first ID (1)
             return 1
 
-    def update_book(self):
+    def update_employee(self):
         try:
             xml_file = self.filename[0]
 
@@ -163,19 +179,28 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
 
             # Iterate through all rows in the table to capture the updated data
             for row in range(self.table.rowCount()):
-                book_id = self.table.item(row, 0).text()  # Get the book ID from the table
-                title = self.table.item(row, 1).text()  # Get the updated title
-                author = self.table.item(row, 2).text()  # Get the updated author
-                pages = self.table.item(row, 3).text()  # Get the updated pages
-                year = self.table.item(row, 4).text()  # Get the updated year
+                employee_id = self.table.item(row, 0).text()  # Get the book ID from the table
+                name = self.table.item(row, 1).text()
+                age = self.table.item(row, 2).text()
+                title = self.table.item(row, 3).text()
+                department = self.table.item(row, 4).text()
+                address1 = self.table.item(row, 5).text()
+                address2 = self.table.item(row, 6).text()
+                additional = self.table.item(row, 7).text()
 
                 # Find the corresponding book in the XML by ID
-                for book in root.findall("book"):
-                    if book.get("id") == book_id:
-                        book.find("title").text = title
-                        book.find("author").text = author
-                        book.find("pages").text = pages
-                        book.find("year").text = year
+                for employee in root.findall("employee"):
+                    if employee.get("id") == employee_id:
+                        employee.find("name").text = name
+                        employee.find("age").text = age
+                        employee.find("title").text = title
+                        employee.find("department").text = department
+                        address = employee.find("address")
+                        if address is not None:
+                            address.find("address1").text = address1
+                            address.find("address2").text = address2
+
+                        employee.find("additional").text = additional
                         break  # Once we've found the book, no need to check further
 
             # Write the updated XML back to the file
@@ -196,7 +221,7 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
 
         self.table.resizeColumnsToContents()
 
-    def delete_book(self):
+    def delete_employee(self):
         try:
             # Get the currently selected row index
             selected_row = self.table.currentRow()
@@ -206,11 +231,11 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
                 return
 
             # Get the book ID from the selected row (column 0)
-            book_id = self.table.item(selected_row, 0).text()
+            employee_id = self.table.item(selected_row, 0).text()
 
             # Ask for confirmation before deleting
             confirm = QMessageBox.question(self, "Confirm Deletion",
-                                        f"Are you sure you want to delete the book with ID {book_id}?",
+                                        f"Are you sure you want to delete the book with ID {employee_id}?",
                                         QMessageBox.Yes | QMessageBox.No)
             if confirm == QMessageBox.No:
                 return
@@ -224,9 +249,9 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
             root = tree.getroot()
 
             # Find and remove the book element with the matching ID
-            for book in root.findall("book"):
-                if book.get("id") == book_id:
-                    root.remove(book)
+            for employee in root.findall("employee"):
+                if employee.get("id") == employee_id:
+                    root.remove(employee)
                     break  # Exit once the matching book is found and removed
 
             # Save the updated XML file
@@ -241,30 +266,41 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
             with open(xml_file, "w", encoding="utf-8") as f:
                 f.write(xml_str)
 
-            print(f"Book with ID {book_id} has been deleted.")
+            print(f"Book with ID {employee_id} has been deleted.")
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to delete book: {str(e)}")
 
     def initialize_table(self):
         self.table.setRowCount(0) # clears the table
-        self.table.setColumnCount(5)
-        self.table.setHorizontalHeaderLabels(['ID', 'Title', 'Author', 'Pages', 'Year'])
+        self.table.setColumnCount(8)
+        self.table.setHorizontalHeaderLabels(['ID', 'Name', 'Age', 'Title', 'Department', 'Address1', 'Address2', 'Additional'])
 
-    def populate_table(self, row, book_id, title, author, pages, year):
+    def populate_table(self, row, employee_id, name, age, title, department, address1, address2, additional):
         self.table.insertRow(row)
-        self.table.setItem(row, 0, QTableWidgetItem(str(book_id)))
-        self.table.setItem(row, 1, QTableWidgetItem(title))
-        self.table.setItem(row, 2, QTableWidgetItem(author))
-        self.table.setItem(row, 3, QTableWidgetItem(pages))
-        self.table.setItem(row, 4, QTableWidgetItem(year))
+        self.table.setItem(row, 0, QTableWidgetItem(str(employee_id)))
+        self.table.setItem(row, 1, QTableWidgetItem(name))
+        self.table.setItem(row, 2, QTableWidgetItem(age))
+        self.table.setItem(row, 3, QTableWidgetItem(title))
+        self.table.setItem(row, 4, QTableWidgetItem(department))
+        self.table.setItem(row, 5, QTableWidgetItem(address1))
+        self.table.setItem(row, 6, QTableWidgetItem(address2))
+        self.table.setItem(row, 7, QTableWidgetItem(additional))
+        
+
+
+
         self.table.resizeColumnsToContents()
         self.table.resizeRowsToContents()
 
     def clear_fields(self):
+        self.line_name.clear()
+        self.line_age.clear()
         self.line_title.clear()
-        self.line_author.clear()
-        self.line_pages.clear()
-        self.line_year.clear()
+        self.line_department.clear()
+        self.line_address1.clear()
+        self.line_address2.clear()
+        self.line_additional.clear()
+        
 
     def dark_mode(self, checked):
         if checked:
