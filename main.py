@@ -2,10 +2,11 @@ import sys
 import qdarkstyle
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QFileDialog, QMessageBox
+from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QTableWidgetItem, QFileDialog, QMessageBox
 from PySide6.QtCore import QSettings
 from main_ui import Ui_MainWindow as main_ui
-from about_ui import Ui_Form as about_ui
+from about_ui import Ui_Dialog as about_ui
+import uuid
 
 class MainWindow(QMainWindow, main_ui): # used to display the main user interface
     def __init__(self):
@@ -18,8 +19,8 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
         self.action_new.triggered.connect(self.new_file)
         self.action_open.triggered.connect(self.open_file)
         self.action_dark_mode.toggled.connect(self.dark_mode)
-        self.action_about.triggered.connect(self.show_about)
-        self.action_about_qt.triggered.connect(self.about_qt)
+        self.action_about_qt.triggered.connect(lambda: QApplication.aboutQt())
+        self.action_about.triggered.connect(lambda: AboutWindow(dark_mode=self.action_dark_mode.isChecked()).exec())
 
         # buttons
         self.button_add.clicked.connect(self.add_employee)
@@ -59,10 +60,10 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
             tree = ET.parse(self.filename[0])
             root = tree.getroot()
 
-            self.employee_ids = []  # Initialize the list to store existing employee IDs
+            self.employees = []  # Initialize the list to store existing employees
             
             for employee in root.findall("employee"):
-                employee_id = employee.get("id")  # Extract the employee ID from the XML
+                id = employee.get("id")  # Extract the employee ID from the XML
                 name = employee.find("name").text
                 age = employee.find("age").text
                 title = employee.find("title").text
@@ -75,9 +76,9 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
 
                 row = self.table.rowCount()
 
-                self.populate_table(row, employee_id, name, age, title, department, address1, address2, additional)
+                self.populate_table(row, id, name, age, title, department, address1, address2, additional)
 
-                self.employee_ids.append(int(employee_id))
+                self.employees.append(str(id))
 
             print(f"File '{self.filename[0]}' opened successfully.")
         except ET.ParseError:
@@ -90,6 +91,7 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
         try: # try these, if the xml file isn't loaded a message will pop up
             xml_file = self.filename[0]
             
+            id = str(uuid.uuid4()) # Generate a unique ID
             name = self.line_name.text()
             age = self.line_age.text()
             title = self.line_title.text()
@@ -100,15 +102,13 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
 
             row = self.table.rowCount()
 
-            employee_id = str(self.get_next_employee_id())
-
-            self.populate_table(row, employee_id, name, age, title, department, address1, address2, additional)
+            self.populate_table(row, id, name, age, title, department, address1, address2, additional)
 
             tree = ET.parse(xml_file)
             root = tree.getroot()
 
             # Create a new book entry
-            employee = ET.SubElement(root, "employee", id=employee_id)
+            employee = ET.SubElement(root, "employee", id=id)
             name_element = ET.SubElement(employee, "name")
             name_element.text = name
             age_element = ET.SubElement(employee, "age")
@@ -148,20 +148,6 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
 
         self.clear_fields()
 
-    def get_next_employee_id(self):
-        # This function retrieves the next available book ID from the existing XML data
-        xml_file = self.filename[0]
-        try:
-            tree = ET.parse(xml_file)
-            root = tree.getroot()
-            # Get all employee IDs
-            employee_ids = [int(employee.get("id")) for employee in root.findall("employee")]
-            next_id = max(employee_ids) + 1 if employee_ids else 1
-            return next_id
-        except (FileNotFoundError, IndexError):
-            # If no employee exist or the file is empty, return the first ID (1)
-            return 1
-
     def update_employee(self):
         try:
             xml_file = self.filename[0]
@@ -172,7 +158,7 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
 
             # Iterate through all rows in the table to capture the updated data
             for row in range(self.table.rowCount()):
-                employee_id = self.table.item(row, 0).text()  # Get the employee ID from the table
+                id = self.table.item(row, 0).text()  # Get the employee ID from the table
                 name = self.table.item(row, 1).text()
                 age = self.table.item(row, 2).text()
                 title = self.table.item(row, 3).text()
@@ -183,7 +169,7 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
 
                 # Find the corresponding employee in the XML by ID
                 for employee in root.findall("employee"):
-                    if employee.get("id") == employee_id:
+                    if employee.get("id") == id:
                         employee.find("name").text = name
                         employee.find("age").text = age
                         employee.find("title").text = title
@@ -223,11 +209,11 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
                 return
 
             # Get the employee ID from the selected row (column 0)
-            employee_id = self.table.item(selected_row, 0).text()
+            id = self.table.item(selected_row, 0).text()
 
             # Ask for confirmation before deleting
             confirm = QMessageBox.question(self, "Confirm Deletion",
-                                        f"Are you sure you want to delete the book with ID {employee_id}?",
+                                        f"Are you sure you want to delete the book with ID {id}?",
                                         QMessageBox.Yes | QMessageBox.No)
             if confirm == QMessageBox.No:
                 return
@@ -242,7 +228,7 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
 
             # Find and remove the employee element with the matching ID
             for employee in root.findall("employee"):
-                if employee.get("id") == employee_id:
+                if employee.get("id") == id:
                     root.remove(employee)
                     break  # Exit once the matching book is found and removed
 
@@ -266,9 +252,9 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
         self.table.setColumnCount(8)
         self.table.setHorizontalHeaderLabels(['ID', 'Name', 'Age', 'Title', 'Department', 'Address 1', 'Address 2', 'Additional'])
 
-    def populate_table(self, row, employee_id, name, age, title, department, address1, address2, additional):
+    def populate_table(self, row, id, name, age, title, department, address1, address2, additional):
         self.table.insertRow(row)
-        self.table.setItem(row, 0, QTableWidgetItem(str(employee_id)))
+        self.table.setItem(row, 0, QTableWidgetItem(str(id)))
         self.table.setItem(row, 1, QTableWidgetItem(name))
         self.table.setItem(row, 2, QTableWidgetItem(age))
         self.table.setItem(row, 3, QTableWidgetItem(title))
@@ -293,13 +279,6 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
             self.setStyleSheet(qdarkstyle.load_stylesheet_pyside6())
         else:
             self.setStyleSheet('')
-
-    def show_about(self):  # loads the About window
-        self.about_window = AboutWindow(dark_mode=self.action_dark_mode.isChecked())
-        self.about_window.show()
-
-    def about_qt(self):  # loads the About Qt window
-        QApplication.aboutQt()
 
     def closeEvent(self, event):  # Save settings when closing the app
         self.settings_manager.save_settings()  # Save settings using the manager
@@ -328,13 +307,13 @@ class SettingsManager: # used to load and save settings when opening and closing
         self.settings.setValue('window_pos', self.main_window.pos())
         self.settings.setValue('dark_mode', self.main_window.action_dark_mode.isChecked())
 
-class AboutWindow(QWidget, about_ui): # Configures the About window
+class AboutWindow(QDialog, about_ui): # this is the About Window
     def __init__(self, dark_mode=False):
         super().__init__()
         self.setupUi(self)
-
         if dark_mode:
             self.setStyleSheet(qdarkstyle.load_stylesheet_pyside6())
+        self.button_ok.clicked.connect(self.accept)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)  # needs to run first

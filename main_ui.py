@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.2
+## Created by: Qt User Interface Compiler version 6.8.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -59,7 +59,7 @@ class Ui_MainWindow(object):
         self.line_name = QLineEdit(self.groupBox)
         self.line_name.setObjectName(u"line_name")
         font = QFont()
-        font.setPointSize(12)
+        font.setPointSize(9)
         self.line_name.setFont(font)
 
         self.horizontalLayout.addWidget(self.line_name)
