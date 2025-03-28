@@ -27,7 +27,7 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
         self.button_update.clicked.connect(self.update_employee)
         self.button_delete.clicked.connect(self.delete_employee)
 
-    def new_file(self): # Create a new XML file for storing employee data
+    def new_file(self): # Create a new XML file for storing employee data (will overwrite existing data so be careful)
         self.clear_fields()
         self.filename = QFileDialog.getSaveFileName(self, 'Create a new file', '', 'Data File (*.xml)',)
 
