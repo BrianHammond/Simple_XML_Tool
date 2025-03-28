@@ -87,4 +87,3 @@ class Ui_Dialog(object):
         self.label_2.setText(QCoreApplication.translate("Dialog", u"<html><head/><body><p>This is just a simple program to help me practice python. </p><p>I have more at my <a href=\"https://github.com/brianhammond\"><span style=\" text-decoration: underline; color:#0000ff;\">github</span></a>.</p></body></html>", None))
         self.button_ok.setText(QCoreApplication.translate("Dialog", u"OK", None))
     # retranslateUi
-

@@ -27,7 +27,7 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
         self.button_update.clicked.connect(self.update_employee)
         self.button_delete.clicked.connect(self.delete_employee)
 
-    def new_file(self):
+    def new_file(self): # Create a new XML file for storing employee data
         self.clear_fields()
         self.filename = QFileDialog.getSaveFileName(self, 'Create a new file', '', 'Data File (*.xml)',)
 
@@ -45,7 +45,7 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
         except FileNotFoundError:
             pass
 
-    def open_file(self):
+    def open_file(self): # Open an existing XML file for updating, deleting and appending
         self.clear_fields()
         self.filename = QFileDialog.getOpenFileName(self, 'Open File', '', 'Data File (*.xml)')
 
@@ -64,7 +64,11 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
             
             for employee in root.findall("employee"):
                 id = employee.get("id")  # Extract the employee ID from the XML
-                name = employee.find("name").text
+                name = employee.find("name")
+                if name is not None:
+                    firstname = name.find("firstname").text if name.find("firstname") is not None else ""
+                    middlename = name.find("middlename").text if name.find("middlename") is not None else ""
+                    lastname = name.find("lastname").text if name.find("lastname") is not None else ""
                 age = employee.find("age").text
                 title = employee.find("title").text
                 department = employee.find("department").text
@@ -72,11 +76,12 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
                 if address is not None:
                     address1 = address.find("address1").text if address.find("address1") is not None else ""
                     address2 = address.find("address2").text if address.find("address2") is not None else ""
-                additional = employee.find("additional").text
+                    country = address.find("country").text if address.find("country") is not None else ""
+                misc = employee.find("misc").text
 
                 row = self.table.rowCount()
 
-                self.populate_table(row, id, name, age, title, department, address1, address2, additional)
+                self.populate_table(row, id, firstname, middlename, lastname, age, title, department, address1, address2, country, misc)
 
             print(f"File '{self.filename[0]}' opened successfully.")
         except ET.ParseError:
@@ -90,38 +95,54 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
             xml_file = self.filename[0]
             
             id = str(uuid.uuid4()) # Generate a unique ID
-            name = self.line_name.text()
+            firstname = self.line_firstname.text()
+            middlename = self.line_middlename.text()
+            lastname = self.line_lastname.text()
             age = self.line_age.text()
             title = self.line_title.text()
             department = self.line_department.text()
             address1 = self.line_address1.text()
             address2 = self.line_address2.text()
-            additional = self.line_additional.text()
+            country = self.line_country.text()
+            misc = self.line_misc.text()
 
             row = self.table.rowCount()
 
-            self.populate_table(row, id, name, age, title, department, address1, address2, additional)
+            self.populate_table(row, id, firstname, middlename, lastname, age, title, department, address1, address2, country, misc)
 
             tree = ET.parse(xml_file)
             root = tree.getroot()
 
             # Create a new book entry
             employee = ET.SubElement(root, "employee", id=id)
-            name_element = ET.SubElement(employee, "name")
-            name_element.text = name
+
+            name = ET.SubElement(employee, "name")
+            firstname_element = ET.SubElement(name, "firstname")
+            firstname_element.text = firstname
+            middlename_element = ET.SubElement(name, "middlename")
+            middlename_element.text = middlename
+            lastname_element = ET.SubElement(name, "lastname")
+            lastname_element.text = lastname
+            
             age_element = ET.SubElement(employee, "age")
             age_element.text = age
+            
             title_element = ET.SubElement(employee, "title")
             title_element.text = title
+            
             department_element = ET.SubElement(employee, "department")
             department_element.text = department
+            
             address = ET.SubElement(employee, "address")
             address1_element = ET.SubElement(address, "address1")
             address1_element.text = address1
             address2_element = ET.SubElement(address, "address2")
             address2_element.text = address2
-            additional_element = ET.SubElement(employee, "additional")
-            additional_element.text = additional
+            country_element = ET.SubElement(address, "country")
+            country_element.text = country
+
+            misc_element = ET.SubElement(employee, "misc")
+            misc_element.text = misc
 
             # Write the updated XML to the file (does not prettify at this point)
             tree.write(xml_file, encoding="utf-8", xml_declaration=True)
@@ -157,18 +178,26 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
             # Iterate through all rows in the table to capture the updated data
             for row in range(self.table.rowCount()):
                 id = self.table.item(row, 0).text()  # Get the employee ID from the table
-                name = self.table.item(row, 1).text()
-                age = self.table.item(row, 2).text()
-                title = self.table.item(row, 3).text()
-                department = self.table.item(row, 4).text()
-                address1 = self.table.item(row, 5).text()
-                address2 = self.table.item(row, 6).text()
-                additional = self.table.item(row, 7).text()
+                firstname = self.table.item(row, 1).text()
+                middlename = self.table.item(row, 2).text()
+                lastname = self.table.item(row, 3).text()
+                age = self.table.item(row, 4).text()
+                title = self.table.item(row, 5).text()
+                department = self.table.item(row, 6).text()
+                address1 = self.table.item(row, 7).text()
+                address2 = self.table.item(row, 8).text()
+                country = self.table.item(row, 9).text()
+                misc = self.table.item(row, 10).text()
 
                 # Find the corresponding employee in the XML by ID
                 for employee in root.findall("employee"):
                     if employee.get("id") == id:
-                        employee.find("name").text = name
+
+                        name = employee.find("name")
+                        if name is not None:
+                            name.find("firstname").text = firstname
+                            name.find("middlename").text = middlename
+                            name.find("lastname").text = lastname
                         employee.find("age").text = age
                         employee.find("title").text = title
                         employee.find("department").text = department
@@ -176,7 +205,8 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
                         if address is not None:
                             address.find("address1").text = address1
                             address.find("address2").text = address2
-                        employee.find("additional").text = additional
+                            address.find("country").text = country
+                        employee.find("misc").text = misc
                         break  # no need to check further
 
             # Write the updated XML back to the file
@@ -247,30 +277,36 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
 
     def initialize_table(self):
         self.table.setRowCount(0) # clears the table
-        self.table.setColumnCount(8)
-        self.table.setHorizontalHeaderLabels(['ID', 'Name', 'Age', 'Title', 'Department', 'Address 1', 'Address 2', 'Additional'])
+        self.table.setColumnCount(11)
+        self.table.setHorizontalHeaderLabels(['ID', 'First Name', 'Middle Name', 'Last Name', 'Age', 'Title', 'Department', 'Address 1', 'Address 2', 'Country', 'Misc'])
 
-    def populate_table(self, row, id, name, age, title, department, address1, address2, additional):
+    def populate_table(self, row, id, firstname, middlename, lastname, age, title, department, address1, address2, country, misc):
         self.table.insertRow(row)
         self.table.setItem(row, 0, QTableWidgetItem(str(id)))
-        self.table.setItem(row, 1, QTableWidgetItem(name))
-        self.table.setItem(row, 2, QTableWidgetItem(age))
-        self.table.setItem(row, 3, QTableWidgetItem(title))
-        self.table.setItem(row, 4, QTableWidgetItem(department))
-        self.table.setItem(row, 5, QTableWidgetItem(address1))
-        self.table.setItem(row, 6, QTableWidgetItem(address2))
-        self.table.setItem(row, 7, QTableWidgetItem(additional))
+        self.table.setItem(row, 1, QTableWidgetItem(firstname))
+        self.table.setItem(row, 2, QTableWidgetItem(middlename))
+        self.table.setItem(row, 3, QTableWidgetItem(lastname))
+        self.table.setItem(row, 4, QTableWidgetItem(age))
+        self.table.setItem(row, 5, QTableWidgetItem(title))
+        self.table.setItem(row, 6, QTableWidgetItem(department))
+        self.table.setItem(row, 7, QTableWidgetItem(address1))
+        self.table.setItem(row, 8, QTableWidgetItem(address2))
+        self.table.setItem(row, 9, QTableWidgetItem(country))
+        self.table.setItem(row, 10, QTableWidgetItem(misc))
         self.table.resizeColumnsToContents()
         self.table.resizeRowsToContents()
 
     def clear_fields(self):
-        self.line_name.clear()
+        self.line_firstname.clear()
+        self.line_middlename.clear()
+        self.line_lastname.clear()
         self.line_age.clear()
         self.line_title.clear()
         self.line_department.clear()
         self.line_address1.clear()
         self.line_address2.clear()
-        self.line_additional.clear()
+        self.line_country.clear()
+        self.line_misc.clear()
 
     def dark_mode(self, checked):
         if checked:
