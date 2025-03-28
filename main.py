@@ -78,8 +78,6 @@ class MainWindow(QMainWindow, main_ui): # used to display the main user interfac
 
                 self.populate_table(row, id, name, age, title, department, address1, address2, additional)
 
-                self.employees.append(str(id))
-
             print(f"File '{self.filename[0]}' opened successfully.")
         except ET.ParseError:
             print("Failed to parse the XML file.")
